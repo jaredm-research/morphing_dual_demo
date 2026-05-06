@@ -1,0 +1,7 @@
+﻿Copyright © 2026 Jared McCullough · ThinkTank Labs.
+
+All rights reserved.
+
+This public demo is provided for viewing and evaluation only. No permission is granted to copy, modify, redistribute, sublicense, scrape, repackage, or commercially use this demo or its source code without written permission.
+
+The protected development repository and full implementation remain private.
