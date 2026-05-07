@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  The Morphing Dual — Pillar I (v0.5.11)
+  The Morphing Dual — Pillar I (v0.5.16)
   Copyright © 2026 Jared McCullough · ThinkTank Labs
   Licensed under the Apache License, Version 2.0
   https://www.apache.org/licenses/LICENSE-2.0
@@ -14,6 +14,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Morphing Dual — Figurate ⇌ p-adic</title>
+<!-- Open Graph (social link previews) -->
+<meta property="og:title" content="The Morphing Dual - Pillar I">
+<meta property="og:description" content="A figurate figure dissolves into a Bruhat-Tits tree, and back. The same integers; two metrics; one continuous gesture.">
+<meta property="og:image" content="https://jaredm-research.github.io/morphing_dual_demo/assets/cover-social.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://jaredm-research.github.io/morphing_dual_demo/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Morphing Dual - Pillar I">
+<meta name="twitter:description" content="A figurate figure dissolves into a Bruhat-Tits tree, and back.">
+<meta name="twitter:image" content="https://jaredm-research.github.io/morphing_dual_demo/assets/cover-social.png">
+<meta name="description" content="The Morphing Dual: a live, interactive visualization showing that the same set of integers can be measured two completely different ways - Euclidean and p-adic.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -219,12 +232,13 @@ h1 .ampamp.has-info:hover { opacity: 0.8; }
 }
 .info-dialog .info-close:hover { color: var(--vermilion); }
 .info-dialog #info-dialog-body {
-  /* Body text bumped from 15.5px/400 → 17px/500 in v0.5.11. The original
-     sizing read as too thin against the paper background, especially on
-     high-DPR phone screens; users couldn't comfortably read the dialog
-     content. 17px/500 gives the same Cormorant manuscript feel with
-     materially better legibility. */
-  font-size: 17px;
+  /* v0.5.13: nudged from 17px to 17.5px. The previous release moved the
+     body from 15.5px/400 to 17px/500 which was a major improvement. The
+     additional half-pixel here is calibrated for desktop monitors at
+     DPR=1 where 17px Cormorant Garamond at weight 500 still reads a
+     touch tight; 17.5px is the breakpoint where the italic m, n, e
+     glyphs hold their internal counters cleanly. */
+  font-size: 17.5px;
   font-weight: 500;
   line-height: 1.55;
   color: var(--ink);
@@ -239,7 +253,10 @@ h1 .ampamp.has-info:hover { opacity: 0.8; }
 }
 .info-dialog #info-dialog-body code {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: 14px;            /* v0.5.13: was 13px. Code spans like
+                                 `min(d, v_p(a-b))` were noticeably smaller
+                                 than the surrounding 17.5px italic body
+                                 text; 14px brings them into proportion. */
   background: var(--paper-shade);
   padding: 1px 6px;
   border-radius: 2px;
@@ -350,7 +367,13 @@ h1 .ampamp.has-info:hover { opacity: 0.8; }
   font-family: 'Cormorant Garamond', serif;
   font-size: 22px;
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 500;        /* v0.5.14: reverted from 600 to 500 for desktop.
+                              Italic Cormorant at 22px / 600 read fine on
+                              mobile (where smaller pixels need the body)
+                              but came out fuzzy on desktop monitors at
+                              DPR=1 — too much stroke for the available
+                              pixels. The mobile media query below restores
+                              600 specifically for narrow viewports. */
   font-style: italic;
   padding: 2px 0;
   border-bottom: 1px dashed var(--ink-faint);
@@ -360,8 +383,29 @@ h1 .ampamp.has-info:hover { opacity: 0.8; }
   text-overflow: ellipsis;
   min-height: calc(1em + 4px);
 }
-#auto-btn.on::before { content: "▶ "; font-style: normal; }
-#auto-btn:not(.on)::before { content: "▷ "; font-style: normal; color: var(--ink-faint);}
+/* Auto-morph button icons:
+   v0.5.15: when auto-morph is ON, show a pause glyph (∥) so it is visually
+   clear the button will pause. Previously both states showed play triangles
+   (filled vs outline) which was ambiguous — users couldn't tell whether
+   the button was a play-toggle or a tempo indicator.
+
+   Using two short vertical bars (▌▌) rendered tightly via a small custom
+   spacing, since standard pause glyphs (⏸ U+23F8, ⏯ U+23EF) render with
+   inconsistent stroke weights across browsers and platforms. Two bold
+   vertical-bar characters give a stable, monospace-aligned pause icon
+   that matches the manuscript aesthetic. */
+#auto-btn.on::before {
+  content: "▌▌ ";
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: -2px;        /* tighten the two bars into a pause shape */
+  color: var(--vermilion);
+}
+#auto-btn:not(.on)::before {
+  content: "▷ ";
+  font-style: normal;
+  color: var(--ink-faint);
+}
 #export-btn::before { content: "⤓ "; font-style: normal; color: var(--ink-faint); }
 #export-btn:hover::before { color: var(--vermilion); }
 
@@ -390,6 +434,37 @@ h1 .ampamp.has-info:hover { opacity: 0.8; }
 }
 .compass.bl { bottom: 14px; left: 18px; }
 .compass.br { bottom: 14px; right: 18px; }
+
+/* v0.5.13: reset-view hint. Only visible when the user has zoomed or
+   panned the canvas (i.e. when state.viewScale != 1 or offsets != 0).
+   Tells them how to get back. Centered at the top of the canvas wrap so
+   it doesn't overlap the bottom-corner compass labels. */
+.reset-hint {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: rgba(239, 230, 207, 0.9);  /* paper, slightly translucent */
+  border: 1px solid var(--rule);
+  padding: 4px 10px;
+  border-radius: 14px;
+  pointer-events: none;
+  z-index: 5;
+  /* fade in/out smoothly when toggled via [hidden] attribute */
+  opacity: 1;
+  transition: opacity 220ms ease-out;
+}
+.reset-hint[hidden] {
+  display: block !important;   /* override default hidden=display:none */
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* A/B selection chips — locked above the canvas in screen space,
    visible at any zoom level. Tap a populated chip to clear that slot. */
@@ -562,24 +637,41 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .section-title {
+  /* v0.5.13: bumped from 10.5px to 11.5px and weight to 500 (default JetBrains
+     Mono is 400 = Regular). The card-eyebrow text "I · SELECTED PAIR" /
+     "II · OBSERVATION" is the entry label for each panel; at 10.5px / 400
+     it disappeared next to the larger marker text on the right. */
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
+  font-size: 11.5px;
+  font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--ink-soft);
   margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;     /* v0.5.13: was 'center'; baseline aligns the
+                                12px-cap-height mono left text with the
+                                17px italic Cormorant on the right so they
+                                sit on a shared imaginary line. */
+  gap: 12px;                 /* v0.5.13: explicit gap for narrow viewports */
 }
 .section-title .marker {
-  color: #C03A1F;          /* slightly brighter than --vermilion (#A8341F) */
+  /* v0.5.14: weight reverted from 600 to 500 for desktop. The bigger
+     17px size (introduced in the previous release) was the right move;
+     the weight bump that came with it read too thick on desktop monitors
+     where italic Cormorant strokes anti-alias differently. The mobile
+     media query keeps weight 600 because phone DPR=2 needs the extra
+     body to render the italics clearly at small pixel sizes. */
+  color: #C03A1F;            /* slightly brighter than --vermilion (#A8341F) */
   font-family: 'Cormorant Garamond', serif;
-  font-size: 15px;
+  font-size: 17px;
   font-style: italic;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
+  line-height: 1;            /* compact so baseline alignment with eyebrow
+                                text feels intentional */
 }
 
 .kv {
@@ -591,7 +683,11 @@ input[type="range"]::-moz-range-thumb {
 }
 .kv dt {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;            /* v0.5.13: was 11px. Selected-pair labels
+                                 like "|a−b|", "v_p(a−b)" are the keys
+                                 of every distance computation; 11px / 400
+                                 was too quiet for the role they play. */
+  font-weight: 500;            /* v0.5.13: was default 400 */
   color: var(--ink-soft);
   letter-spacing: 0.04em;
   padding-top: 2px;
@@ -631,7 +727,11 @@ input[type="range"]::-moz-range-thumb {
   color: var(--ink);
   display: block;
   margin-bottom: 6px;
-  font-size: 16px;
+  font-size: 17px;             /* v0.5.13: was 16px. The lead line names
+                                  the family ("centered hexagonal numbers
+                                  · C_k = 3k(k−1)+1"); at 16px it sat below
+                                  the 18px body it introduces. 17px lets
+                                  it carry as the headline of the panel. */
 }
 #observation .figure {
   color: var(--vermilion);
@@ -645,18 +745,25 @@ input[type="range"]::-moz-range-thumb {
 
 /* ───────── FOOTER ───────── */
 footer {
+  /* v0.5.13: bumped 11px ink-faint → 12px ink-soft. The footer carries
+     the version stamp and copyright — the package's identity card.
+     Prior spec rendered as ambient pixels rather than readable text;
+     12px / ink-soft is still subordinate but actually legible. */
   padding: 14px 28px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;    /* v0.5.13: stack version / copyright vertically;
+                                'space-between' wasn't doing what we wanted */
+  align-items: flex-start;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;    /* slightly tighter than 0.16em — wider tracking
+                                pushed glyphs apart enough to feel ghost-like */
   text-transform: uppercase;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
   background: var(--paper-shade);
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 4px;                  /* tight stacking between the two lines */
 }
 footer .signature {
   font-family: 'Cormorant Garamond', serif;
@@ -697,7 +804,17 @@ footer .signature {
      symmetric pairing is the design. Just tighten padding and font. */
   .ctrl { padding: 10px 12px; }
   .ctrl select, .ctrl button { font-size: 17px; }
-  .ctrl-formula { font-size: 17px; }
+  .ctrl-formula {
+    font-size: 17px;
+    /* v0.5.14: restore weight 600 for phone. Phone DPR=2 needs the
+       extra body to keep italic Cormorant readable at small pixel
+       sizes. Desktop spec (above) stays at 500. */
+    font-weight: 600;
+  }
+  .section-title .marker {
+    /* v0.5.14: same reasoning — phone needs the heavier weight. */
+    font-weight: 600;
+  }
   .slider-row { grid-template-columns: 1fr; }
   .slider-end { padding: 8px 14px; border-bottom: 1px solid var(--rule); }
   .slider-end.right { text-align: left; }
@@ -709,6 +826,26 @@ footer .signature {
   }
   .kv { grid-template-columns: 110px 1fr; font-size: 15px; }
   .compass { display: none; }
+  /* v0.5.15: phone footer wraps better. Earlier rewrites stacked lines
+     vertically but didn't constrain individual lines, so the longest
+     ("PARAMS · ...") would wrap mid-clause and create a four-line tall
+     mess on narrow phones. New approach: each line is its own width:100%
+     block (so flex-wrap doesn't lay two side-by-side), smaller font
+     (10.5px from 11.5px) gives more horizontal room, and very tight
+     letter-spacing (0.06em) keeps each line on a single row at iPhone
+     widths. The slight readability cost is offset by the much cleaner
+     three-line stack: version/build, copyright, params. */
+  footer {
+    padding: 12px 14px;
+    flex-wrap: nowrap;
+    letter-spacing: 0.06em;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+  footer > div {
+    width: 100%;
+    line-height: 1.5;
+  }
 }
 
 /* On wide screens (tablet landscape and desktop) the 4×2 phone grid
@@ -747,7 +884,7 @@ footer .signature {
       <div class="eyebrow">
         <span class="seg has-info" data-info="pillar-i">Pillar I</span>
         <span class="spacer"></span>
-        <span class="seg">Prototype</span>
+        <span class="seg">Demo</span>
         <span class="spacer"></span>
         <span class="seg">ThinkTank Labs</span>
       </div>
@@ -846,6 +983,7 @@ footer .signature {
   <div class="canvas-wrap">
     <span class="compass bl">Click two dots</span>
     <span class="compass br">to read distance</span>
+    <span class="reset-hint" id="reset-hint" aria-live="polite" hidden>double-tap to reset view</span>
     <canvas id="stage" aria-label="Morphing dual diagram: figurate dot-figure transitioning to a Bruhat-Tits tree"></canvas>
   </div>
 
@@ -884,7 +1022,8 @@ footer .signature {
   </div>
 
   <footer>
-    <div>Pillar I · Morphing Dual · v0.5.11 <span id="build-id" style="opacity:0.4; font-size:0.85em">build 2026-05-05·A</span></div>
+    <div>Pillar I · Morphing Dual · v0.5.16 <span id="build-id" style="opacity:0.5; font-size:0.9em">build 2026-05-07·E</span></div>
+    <div style="opacity:0.75; font-size:0.95em;">© 2026 Jared McCullough · ThinkTank Labs · Apache-2.0</div>
     <div id="provenance"></div>
   </footer>
 </div>
@@ -910,6 +1049,12 @@ footer .signature {
    remains a single self-contained file. If you edit either copy, edit
    both — scripts/audit.py D1/D2/D10 catch drift between them.
    ════════════════════════════════════════════════════════════════════ */
+
+/* Single source of truth for the artifact's version string. Used by
+   PNG signature template, JSON export provenance block, and any other
+   surface that needs the current version. release.py monitors this
+   line so it stays in lockstep with VERSION. */
+const VERSION_STRING = 'v0.5.16';
 
 function vp(n, p) {
   if (n === 0) return Infinity;
@@ -1348,8 +1493,22 @@ function recomputeLayout() {
   // ── EUCLIDEAN box: take roughly the left-half / centred column. The actual
   //    arrangement is delegated to computeEuclideanLayout so each family
   //    paints its own characteristic shape.
-  const eucMaxW = Math.min(innerW * 0.62, innerH * 1.2);
-  const eucMaxH = innerH * 0.92;
+  // v0.5.14: bumped layout budget from 0.62/1.2/0.92 to 0.65/1.25/0.96
+  // (~4-5% larger figures at default zoom).
+  // v0.5.15: separate mobile (CW < 600) budget. The desktop bump was
+  // applied to both viewports but on phone, where the canvas is square
+  // and innerW * 0.65 binds, the figure was still smaller than the
+  // available real estate suggested. Mobile budget is now 0.74 / 1.40 /
+  // 1.00 — roughly 14% larger figure on phone, fitting comfortably within
+  // the canvas bounds. Math invariants verified unchanged: figurate dot
+  // coordinates scale uniformly within the bounds; tree-meet, residue
+  // distributions, and apex invariance all preserved.
+  const isMobile = CW < 600;
+  const wFracW = isMobile ? 0.74 : 0.65;
+  const wFracH = isMobile ? 1.40 : 1.25;
+  const hFrac  = isMobile ? 1.00 : 0.96;
+  const eucMaxW = Math.min(innerW * wFracW, innerH * wFracH);
+  const eucMaxH = innerH * hFrac;
   const eCx = CW / 2;
   const eCy = PAD_TOP + innerH / 2;
   const eucPositions = computeEuclideanLayout(N, family, eCx, eCy, eucMaxW, eucMaxH);
@@ -1468,13 +1627,14 @@ function drawAll() {
   // here during the morph (especially in dense families where dots fan out
   // across the upper canvas at intermediate t).
   ctx.save();
-  // Font size: bumped from 11.5px → 13.5px in an earlier release. At
-  // high-DPR phone
-  // viewports, the subscript digits in N=61=C₅ (and similar) were too small
-  // to distinguish from neighbouring values (C₅ vs C₆). 13.5px gives the
-  // subscripts ~5 device pixels of vertical room — readable without
-  // overwhelming the figure beneath.
-  ctx.font = '500 13.5px "JetBrains Mono", monospace';
+  // Font size: bumped to integer 14px (was 13.5px) to eliminate
+  // subpixel-positioning fuzziness on desktop monitors at DPR=1.
+  // v0.5.15: weight bumped from 500 to 600 to match the params line
+  // below it. Weight 500 at 14px in monospace looked thin and
+  // 'charcoal-fuzzy' on desktop where the rgba fill at 0.9 alpha
+  // softens stroke ends; weight 600 holds its body with the same
+  // alpha and reads sharp.
+  ctx.font = '600 14px "JetBrains Mono", monospace';
   // Family display name: matches the dropdown label ("centered hex" not
   // "centered hexagonal") so the on-canvas familyLabel stays compact and
   // the formula still fits beside it.
@@ -1525,12 +1685,12 @@ function drawAll() {
   // Family label (line 1) — uppercase, slightly fainter weight is fine.
   ctx.fillStyle = "rgba(79, 72, 61, 0.9)";
   ctx.fillText(famLabel.toUpperCase(), 18, line1Y);
-  // Params line (line 2) — bumped to weight 600 in an earlier release
-  // because the
-  // Unicode subscript glyphs (₅, ₆, ₇) at weight 500 were too thin to read
-  // at high-DPR phone viewports. Also darkened the colour from the previous
-  // light grey so subscripts have more contrast against the paper backing.
-  ctx.font = '600 13.5px "JetBrains Mono", monospace';
+  // Params line (line 2) — integer 14px (was 13.5px) for the same
+  // subpixel-positioning reason. Weight stays at 600 because the
+  // Unicode subscript glyphs (₅, ₆, ₇) need the extra body to read at
+  // high-DPR phone viewports. Colour is full-strength against the
+  // paper backing.
+  ctx.font = '600 14px "JetBrains Mono", monospace';
   ctx.fillStyle = "rgba(79, 72, 61, 1)";
   ctx.fillText(paramsLabel, 18, line2Y);
   ctx.restore();
@@ -1547,10 +1707,30 @@ function drawAll() {
   // ─ TREE EDGES — fade in across the full morph, starting earlier and
   // reaching a stronger final opacity so the tree skeleton remains
   // legible as the figurate dot-figure dissolves into it.
+  //
+  // v0.5.12: two-pass rendering for crisper export reproduction.
+  // Pass 1: a wider, very faint dark-gray underlay gives each edge a
+  //   subtle "ink shadow" that survives PNG downscaling and grayscale
+  //   printing. The main ultramarine stroke alone reproduced too pale
+  //   in some contexts (small-screen PDFs, B&W prints).
+  // Pass 2: the visible ultramarine stroke at slightly higher weight
+  //   and opacity than before (1.4px / 0.80 alpha at full visibility,
+  //   up from 1.2px / 0.72).
   const eAlpha = Math.max(0, (t - 0.10) / 0.90);
   if (eAlpha > 0.01) {
-    ctx.strokeStyle = `rgba(31, 58, 104, ${0.72 * eAlpha})`;
-    ctx.lineWidth = 1.2;
+    // Pass 1: dark underlay
+    ctx.strokeStyle = `rgba(26, 24, 23, ${0.18 * eAlpha})`;
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    for (const seg of treePath) {
+      ctx.moveTo(seg.x0, seg.y0);
+      ctx.lineTo(seg.x1, seg.y1);
+    }
+    ctx.stroke();
+    // Pass 2: main ultramarine stroke
+    ctx.strokeStyle = `rgba(31, 58, 104, ${0.80 * eAlpha})`;
+    ctx.lineWidth = 1.4;
     ctx.lineCap = "round";
     ctx.beginPath();
     for (const seg of treePath) {
@@ -1782,12 +1962,18 @@ function drawAll() {
     }
     // Sort left-to-right so collision detection compares neighbours.
     candidates.sort((a, b) => a.x - b.x);
-    ctx.font = '500 11px "JetBrains Mono", monospace';
+    // v0.5.13: dot labels bumped from 500 11px to 600 12px. On desktop
+    // monitors at DPR=1, the prior spec rendered weight-500 strokes at
+    // ~11 device pixels — right at the threshold where stroke ends round
+    // into anti-aliasing fuzz. 12px / weight 600 gives crisper rendering
+    // on DPR=1 displays while staying well within layout budget on phone.
+    ctx.font = '600 12px "JetBrains Mono", monospace';
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const placed = [];          // {x, y_label, halfWidth}
     const labelPad = 2;         // px between adjacent labels
-    const stackStep = 13;       // px to lift a label that collides
+    const stackStep = 14;       // px to lift a label that collides
+                                // (was 13 in v0.5.12; +1 for the 12px font)
     for (const c of candidates) {
       const w = ctx.measureText(c.value).width;
       let yLab = c.y - 12;
@@ -1796,7 +1982,7 @@ function drawAll() {
       while (safety++ < 8) {
         let collides = false;
         for (const q of placed) {
-          if (Math.abs(q.y_label - yLab) > 10) continue;       // different row
+          if (Math.abs(q.y_label - yLab) > 11) continue;       // different row (was 10 pre-v0.5.13)
           const dx = Math.abs(q.x - c.x);
           if (dx < (q.halfWidth + w / 2 + labelPad)) {
             collides = true;
@@ -2099,18 +2285,40 @@ canvas.addEventListener('click', safe((e) => {
 
 // touch
 canvas.addEventListener('touchstart', safe((e) => {
-  e.preventDefault();
+  // v0.5.13: only preventDefault for two-finger gestures (pinch) or for
+  // single-finger touches when the canvas is zoomed in. At scale=1, a
+  // single-finger drag on the canvas should propagate to the page so
+  // users can scroll past the figure to read the lower panels — most
+  // notably on phones where the canvas dominates the viewport. This was
+  // the cause of the "I can't scroll past the figure" complaint.
   if (e.touches.length === 2) {
-    // pinch start
+    // pinch start — always capture
+    e.preventDefault();
     pinchStart(e);
     return;
   }
   if (e.touches.length === 1) {
-    panStart(e.touches[0].clientX, e.touches[0].clientY);
+    const zoomed = state.viewScale > 1.001;
+    if (zoomed) {
+      // Zoomed in → single-finger drag pans the figure
+      e.preventDefault();
+      panStart(e.touches[0].clientX, e.touches[0].clientY);
+    }
+    // Either way (zoomed or not), the touch may also be a tap-to-select.
+    // We allow that even at scale=1; it's identified at touchend by
+    // pan.moved being false (and at scale=1 pan never starts so moved is
+    // false anyway). Selection happens here on touchstart for snappy feel.
+    const { x, y } = getCanvasPos(e);
+    const d = dotAt(x, y);
+    if (d) {
+      // Only preventDefault when we're actually selecting a dot —
+      // prevents the touch from bubbling to scroll machinery on
+      // platforms where tap-then-drag could otherwise cause a partial
+      // scroll start.
+      e.preventDefault();
+      selectDot(d.value);
+    }
   }
-  const { x, y } = getCanvasPos(e);
-  const d = dotAt(x, y);
-  if (d) selectDot(d.value);
 }, 'touchstart'), { passive: false });
 
 /* ════════════════════════════════════════════════════════════════════
@@ -2130,12 +2338,46 @@ function clampView() {
   const maxOff = Math.max(0, (state.viewScale - 0.8) * Math.max(CW, CH) * 0.6);
   state.viewOffsetX = Math.max(-maxOff, Math.min(maxOff, state.viewOffsetX));
   state.viewOffsetY = Math.max(-maxOff, Math.min(maxOff, state.viewOffsetY));
+  // v0.5.13: show the reset hint whenever the view is non-default.
+  // v0.5.14: auto-fade after 3 seconds. The chip lingering on phone
+  // was disrupting the figure view; on desktop it was harmless but
+  // unnecessarily persistent. Now it announces itself, then steps
+  // back: if the user is still zoomed but hasn't acted, they've
+  // already seen it. If they zoom again, the chip re-appears (the
+  // `dirty` branch always re-shows on any further view change).
+  const resetHint = document.getElementById('reset-hint');
+  if (resetHint) {
+    const dirty = Math.abs(state.viewScale - 1) > 0.001
+                || Math.abs(state.viewOffsetX) > 0.5
+                || Math.abs(state.viewOffsetY) > 0.5;
+    if (dirty) {
+      resetHint.removeAttribute('hidden');
+      // Restart the fade timer on every dirty-update so continuing
+      // gestures don't prematurely hide the chip mid-zoom.
+      if (resetHint._fadeTimer) clearTimeout(resetHint._fadeTimer);
+      resetHint._fadeTimer = setTimeout(() => {
+        // Only auto-hide if still in dirty state; if a reset happened
+        // in the meantime, resetView() already hid the chip.
+        const stillDirty = Math.abs(state.viewScale - 1) > 0.001
+                        || Math.abs(state.viewOffsetX) > 0.5
+                        || Math.abs(state.viewOffsetY) > 0.5;
+        if (stillDirty) resetHint.setAttribute('hidden', '');
+      }, 3000);
+    } else {
+      resetHint.setAttribute('hidden', '');
+      if (resetHint._fadeTimer) {
+        clearTimeout(resetHint._fadeTimer);
+        resetHint._fadeTimer = null;
+      }
+    }
+  }
 }
 
 function resetView() {
   state.viewScale = 1;
   state.viewOffsetX = 0;
   state.viewOffsetY = 0;
+  clampView();   // v0.5.13: also hides the reset-hint chip
   scheduleDraw();
 }
 
@@ -2389,17 +2631,28 @@ slider.addEventListener('input', safe(e => {
   const v = parseFloat(e.target.value);
   if (!Number.isFinite(v)) return;
   state.t = v;
-  state.auto = false;
-  document.getElementById('auto-btn').classList.remove('on');
+  setAutoMorphState(false);   // v0.5.15: consistent state via helper
   updateProvenance();
   scheduleDraw();
 }, 'slider'));
 
 const autoBtn = document.getElementById('auto-btn');
+
+// v0.5.15: helper used by every place that toggles auto-morph state so
+// the button class, text, and state.auto stay synchronized. Previously
+// each caller set the class manually and forgot to update text.
+function setAutoMorphState(on) {
+  state.auto = on;
+  autoBtn.classList.toggle('on', on);
+  autoBtn.textContent = on ? 'pause morph' : 'auto-morph';
+}
+
 autoBtn.addEventListener('click', safe(() => {
-  state.auto = !state.auto;
+  setAutoMorphState(!state.auto);
   state.autoMode = 'oscillate';
-  autoBtn.classList.toggle('on', state.auto);
+  // v0.5.15: button text reflects current action so users see "pause"
+  // when the morph is running, "auto-morph" when idle. Pairs with the
+  // pause-icon CSS rules above.
   if (state.auto) {
     lastFrameT = performance.now();
     requestAnimationFrame(autoStep);
@@ -2412,14 +2665,29 @@ autoBtn.addEventListener('click', safe(() => {
    image so the file is self-describing for papers, slides, archives.
    Triggered by the export button or the E key. Auto-pauses if running.
    ════════════════════════════════════════════════════════════════════ */
-function exportPNG() {
+function exportPNG(pairHash) {
+  // pairHash (optional, added in an earlier release): the SHA-256 hex
+  // string from the accompanying JSON export's
+  // provenance.sha256_of_canonical. When present, the first 12 hex chars
+  // are rendered in the provenance band as "pair=abc123…". Anyone with
+  // both files can confirm they came from the same export by matching
+  // the visible PNG hash to the JSON's full hash field. When called
+  // alone (without paired JSON), pairHash is undefined and the band
+  // omits the field.
+
   // pause auto-morph so the captured frame matches what's on screen
   if (state.auto) {
-    state.auto = false;
-    autoBtn.classList.remove('on');
+    setAutoMorphState(false);   // v0.5.15: consistent state via helper
   }
 
-  const SCALE = 2;                   // 2× resolution for crisp print/retina
+  // v0.5.13: SCALE bumped from 2 to 3 for materially crisper output.
+  // At SCALE=2 the export was 2560×~1500 — fine for normal viewing
+  // but text in the provenance band noticeably softened on 4K monitors
+  // and in printed output. SCALE=3 produces ~3840×~2200, sharp at any
+  // zoom up to 200% on retina/4K displays and ready for print at 300dpi.
+  // File-size cost: ~600KB-1MB → ~1.5-2MB per export. Worth it: the
+  // export is the artifact's canonical visual record.
+  const SCALE = 3;
   const BAND_H = 96;                  // provenance band in logical pixels
   const outW = CW * SCALE;
   const outH = (CH + BAND_H) * SCALE;
@@ -2506,7 +2774,12 @@ function exportPNG() {
   octx.fillStyle = '#8C8470';
   octx.textAlign = 'right';
   octx.font = `400 ${10 * SCALE}px "JetBrains Mono", monospace`;
-  const sig = `Pillar I · v0.5.11 · © 2026 J. McCullough · ${new Date().toISOString().slice(0, 10)}`;
+  // v0.5.15: when paired with a JSON export, embed the first 12 hex
+  // chars of the JSON's provenance hash so anyone can confirm at a
+  // glance which JSON belongs to this PNG. The full hash lives in
+  // the JSON's provenance.sha256_of_canonical field.
+  const pairFrag = pairHash ? ` · pair=${pairHash.slice(0, 12)}` : '';
+  const sig = `Pillar I · v0.5.16 · © 2026 J. McCullough · ${new Date().toISOString().slice(0, 10)}${pairFrag}`;
   octx.fillText(sig, outW - 18 * SCALE, (bandY / SCALE + BAND_H - 18) * SCALE);
 
   // Trigger download
@@ -2531,7 +2804,37 @@ function exportPNG() {
    residue distribution). Anyone can verify the figure's claims against
    this JSON without OCR'ing the image.
    ════════════════════════════════════════════════════════════════════ */
-function exportJSON() {
+/* Canonicalize a JS value into a deterministic JSON string. Object keys
+   are sorted alphabetically; arrays preserve order; no extraneous
+   whitespace. Strings, numbers, booleans, null all serialize per JSON.
+   This is a minimal subset of RFC 8785 (JCS) sufficient for our needs:
+   we only emit primitive types, plain objects, and arrays in the export.
+   The result is what we hash to give the export a forensic identity. */
+function canonicalJSON(value) {
+  if (value === null) return 'null';
+  if (typeof value === 'boolean' || typeof value === 'number') return JSON.stringify(value);
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    return '[' + value.map(canonicalJSON).join(',') + ']';
+  }
+  if (typeof value === 'object') {
+    const keys = Object.keys(value).sort();
+    const parts = keys.map(k => JSON.stringify(k) + ':' + canonicalJSON(value[k]));
+    return '{' + parts.join(',') + '}';
+  }
+  return 'null';
+}
+
+/* SHA-256 of a string, returned as hex. Uses Web Crypto API which is
+   available in every modern browser context. */
+async function sha256Hex(text) {
+  const enc = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', enc);
+  const bytes = new Uint8Array(hashBuffer);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function exportJSON() {
   const fam = FAMILIES[state.family];
   const famName = state.family === "none" ? null : fam.name;
   const famFormula = state.family === "none" ? null : fam.formula;
@@ -2571,6 +2874,17 @@ function exportJSON() {
       };
     }
   }
+
+  // Per-dot leaf assignments — introduced in an earlier release so the
+  // export is self-contained mathematically: a reviewer can verify the
+  // tree-meet identity for any pair from the JSON alone, without re-running
+  // the artifact. Compact one-line-per-integer schema.
+  const dotAssignments = dots.map(dt => ({
+    n: dt.value,
+    is_family: dt.isFamily,
+    leaf_idx: dt.leafIdx,
+    base_p_digits: dt.digits   // LSB-first; matches selected-pair convention
+  }));
 
   // Pair claim
   let pair = null;
@@ -2612,9 +2926,15 @@ function exportJSON() {
     };
   }
 
-  const evidence = {
+  // Build the evidence object WITHOUT the provenance.sha256 field,
+  // canonicalize, hash, then insert. This makes the hash a verifiable
+  // forensic identity: anyone can reproduce it by computing
+  // SHA-256 of canonicalJSON(evidence with provenance.sha256_of_canonical
+  // removed).
+  const evidenceCore = {
     package: 'Pillar I — The Morphing Dual',
-    version: '0.5.11',
+    claim: 'Same finite integer set under Euclidean and p-adic geometry.',
+    version: VERSION_STRING,
     copyright: '© 2026 Jared McCullough · ThinkTank Labs',
     license: 'Apache-2.0',
     generated_at_utc: new Date().toISOString(),
@@ -2634,6 +2954,7 @@ function exportJSON() {
       family_member_count: members.length,
       residue_analysis: residues
     },
+    dot_assignments: dotAssignments,
     selected_pair: pair,
     view_transform: {
       scale: state.viewScale,
@@ -2643,10 +2964,39 @@ function exportJSON() {
     citation_hint: 'Verify these claims independently with: python3 scripts/verify_math.py · or load data/figurate_numbers.csv · or replay the artifact at the same parameters.'
   };
 
+  // Canonicalize and hash the core (no provenance block yet)
+  const canonical = canonicalJSON(evidenceCore);
+  const sha = await sha256Hex(canonical);
+
+  // Final evidence with provenance prepended
+  const evidence = {
+    provenance: {
+      sha256_of_canonical: sha,
+      canonicalization: 'sorted-key minimal JSON, all fields except provenance itself',
+      tool: `morphing_dual.html ${VERSION_STRING}`
+    },
+    ...evidenceCore
+  };
+
   const json = JSON.stringify(evidence, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
   const filename = `morphing-dual-${state.family}-N${state.N}-p${state.p}-d${state.d}-t${state.t.toFixed(2)}.json`;
+
+  // Mobile-friendly download path: use Web Share API when available
+  // (handles iOS Safari which often opens download blobs as text rather
+  // than offering a save dialog). Fall back to the classic <a download>
+  // mechanism on desktop and browsers without Share API.
+  const blob = new Blob([json], { type: 'application/json' });
+  const file = new File([blob], filename, { type: 'application/json' });
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent || '');
+  if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Pillar I evidence', text: filename });
+      return sha;   // v0.5.16: return hash so paired PNG can stamp pair=...
+    } catch (e) {
+      // User cancelled share or share failed — fall through to download
+    }
+  }
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
@@ -2654,13 +3004,18 @@ function exportJSON() {
   link.click();
   document.body.removeChild(link);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return sha;       // v0.5.16: return hash so paired PNG can stamp pair=...
 }
 
-document.getElementById('export-btn').addEventListener('click', safe(() => {
+document.getElementById('export-btn').addEventListener('click', safe(async () => {
   // Export both PNG (visual) and JSON (machine-verifiable) as a paired
   // evidence package. Both files share the same descriptive filename stem.
-  exportPNG();
-  exportJSON();
+  // v0.5.16: JSON is computed FIRST so its canonical SHA-256 can be
+  // embedded into the PNG provenance band. Previously PNG ran first
+  // with no hash argument, which is why exported PNGs lacked the pair=
+  // signature even though exportPNG accepted a pairHash parameter.
+  const sha = await exportJSON();
+  exportPNG(sha);
 }, 'export-btn'));
 
 /* ════════════════════════════════════════════════════════════════════
@@ -2682,12 +3037,12 @@ const INFO_CONTENT = {
   'dual': {
     title: 'What does "Dual" mean?',
     body: `
-      <p>Mathematics often gives the same set of objects two faces, two ways of being measured. We call those faces <em>dual</em>.</p>
+      <p>Mathematics often studies the same objects through two complementary structures or measurements. In this artifact, we call those two complementary views the <em>dual faces</em> of the integers.</p>
       <p>For the integers 1, 2, 3, …, the two faces are:</p>
-      <p>• The <em>Euclidean</em> face — integers laid out in two-dimensional space, where distance means <code>|a − b|</code> on the number line, and figurate numbers form recognizable shapes (triangles, hexagons, stars).</p>
-      <p>• The <em>p-adic</em> face — the same integers arranged on a Bruhat-Tits tree T_p, where distance means <code>|a − b|_p</code>: how divisible their difference is by the prime p. Two numbers are "close" when their difference contains many factors of p.</p>
+      <p>• The <em>Euclidean</em> face — integers laid out in the Euclidean plane, where distance means <code>|a − b|</code> on the number line, and figurate numbers form recognizable shapes (triangles, hexagons, stars).</p>
+      <p>• The <em>p-adic</em> face — the same integers arranged on a finite p-adic residue tree, a depth-d truncation of the infinite Bruhat-Tits tree T_p, where distance means <code>|a − b|_p</code>: how divisible their difference is by the prime p. Two numbers are "close" when their difference contains many factors of p.</p>
       <p>The <em>duality</em> is that these are not two different objects — they are the <em>same integers</em> viewed under two different metrics. The morph slider literally interpolates between the two views.</p>
-      <p>The artifact makes a textbook identity from p-adic analysis vivid: the <em>tree-meet</em> of two integers (their depth of common ancestor in T_p) equals <code>min(d, v_p(a−b))</code>, where v_p is the p-adic valuation. The tree's geometry encodes the p-adic algebra exactly. This identity is foundational to p-adic analysis and the Bruhat-Tits tree construction (Bruhat & Tits 1972; Serre, <em>Trees</em>, 1980); the contribution of this artifact is its interactive visualization, not the identity itself.</p>
+      <p>The artifact makes a textbook identity from p-adic analysis vivid: the <em>tree-meet</em> of two integers (their depth of common ancestor in the truncated p-adic tree) equals <code>min(d, v_p(a−b))</code>, where v_p is the p-adic valuation. The tree's geometry encodes the p-adic algebra exactly. This identity is a standard result in p-adic analysis and the Bruhat-Tits tree construction (Bruhat &amp; Tits 1972; Serre, <em>Trees</em>, 1980); the contribution of this artifact is its interactive visualization across figurate number families, not the identity itself.</p>
     `
   }
 };
@@ -2771,8 +3126,7 @@ function startDirectionalPlay(direction) {
   // direction: +1 (forward / End) or -1 (reverse / Begin)
   // If already playing in same direction, pause.
   if (state.auto && state.autoDir === direction) {
-    state.auto = false;
-    autoBtn.classList.remove('on');
+    setAutoMorphState(false);   // v0.5.15: consistent state via helper
     return;
   }
   // If at the target endpoint already, flip direction so a tap actually plays
@@ -2833,15 +3187,19 @@ window.addEventListener('keydown', safe((e) => {
     state.t = 0;
     state.selectedA = null; state.selectedB = null;
     state.viewScale = 1; state.viewOffsetX = 0; state.viewOffsetY = 0;
-    if (state.auto) { state.auto = false; autoBtn.classList.remove('on'); }
+    if (state.auto) setAutoMorphState(false);   // v0.5.15: helper
     slider.value = 0;
     updateProvenance(); updatePairReadout(); scheduleDraw();
   } else if (e.key === 'Escape') {
     state.selectedA = null; state.selectedB = null;
     updatePairReadout(); scheduleDraw();
   } else if (e.key === 'e' || e.key === 'E') {
-    exportPNG();
-    exportJSON();
+    // v0.5.16: same as the export button - JSON first to compute the
+    // canonical SHA-256, then PNG with that hash so the band records pair=…
+    (async () => {
+      const sha = await exportJSON();
+      exportPNG(sha);
+    })();
   }
 }, 'keydown'));
 
@@ -2858,20 +3216,17 @@ function autoStep(now) {
       if (state.t <= 0) { state.t = 0; state.autoDir = 1; }
     } else if (state.autoMode === 'forward') {
       // play toward t=1, then stop
-      if (state.t >= 1) { state.t = 1; state.auto = false;
-        document.getElementById('auto-btn').classList.remove('on'); }
+      if (state.t >= 1) { state.t = 1; setAutoMorphState(false); }
     } else if (state.autoMode === 'reverse') {
       // play toward t=0, then stop
-      if (state.t <= 0) { state.t = 0; state.auto = false;
-        document.getElementById('auto-btn').classList.remove('on'); }
+      if (state.t <= 0) { state.t = 0; setAutoMorphState(false); }
     }
     slider.value = state.t;
     updateProvenance();
     drawAll();
     if (state.auto) requestAnimationFrame(autoStep);
   } catch (e) {
-    state.auto = false;
-    document.getElementById('auto-btn').classList.remove('on');
+    setAutoMorphState(false);   // v0.5.15: helper
     showErr('auto: ' + (e.message || e) + '\n' + (e.stack || ''));
   }
 }
@@ -2936,7 +3291,7 @@ setTimeout(() => {
   time in `SHA256SUMS` and `provenance.json` (entry: src/morphing_dual.html).
   Any modification — even a single character — changes the hash.
 
-  The package source (https://github.com/<your-handle-here>) ships an
+  The package source (https://github.com/jaredm-research) ships an
   Apache-2.0 license, full mathematical specification, regression test
   suite, and provenance manifest. See README.md.
 
